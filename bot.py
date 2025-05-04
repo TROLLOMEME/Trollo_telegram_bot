@@ -2,8 +2,8 @@ import os
 from telegram.ext import Updater, MessageHandler, Filters
 import openai
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+BOT_TOKEN = os.getenv(BOT_TOKEN)
+OPENAI_API_KEY = os.getenv(OPENAI_API_KEY)
 openai.api_key = OPENAI_API_KEY
 
 def handle_message(update, context):
