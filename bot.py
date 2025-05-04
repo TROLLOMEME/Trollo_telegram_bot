@@ -1,48 +1,51 @@
 import os
 import logging
+import random
 from telegram import Update
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
-
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    level=logging.INFO)
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 if not BOT_TOKEN:
-    raise ValueError("BOT_TOKEN is missing. Add it to your environment variables.")
+    raise ValueError("BOT_TOKEN not found in environment variables.")
 
-trollo_quotes = [
-    "You again? Still poor?",
-    "Buy the dip, they said. Now cry in the meme pit.",
-    "HODL? More like HOPES and DREAMS.",
-    "One does not simply sell TROLLO.",
-    "Welcome to the meme-verse, rookie.",
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+)
+
+# TROLLO phrases
+trollo_lines = [
+    "Who summoned the meme lord?",
+    "Another day, another poor trader.",
+    "Don't trust green candles... or clowns.",
+    "Keep calm and TROLLO on.",
+    "When in doubt, zoom out.",
 ]
 
-def start(update: Update, context: CallbackContext):
-    update.message.reply_text("TROLLO is alive... and watching.")
+# /start command
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("TROLLO has entered the chat. Say something...")
 
-def ask_trollo(update: Update, context: CallbackContext):
-    from random import choice
-    update.message.reply_text(choice(trollo_quotes))
+# /trollo command
+async def trollo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(random.choice(trollo_lines))
 
-def reply_to_mentions(update: Update, context: CallbackContext):
+# respond to any group message mentioning bot
+async def reply_in_group(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if context.bot.username.lower() in update.message.text.lower():
-        from random import choice
-        update.message.reply_text(f"TROLLO says: {choice(trollo_quotes)}")
+        await update.message.reply_text(random.choice(trollo_lines))
 
-def main():
-    updater = Updater(BOT_TOKEN, use_context=True)
-    dp = updater.dispatcher
+# MAIN
+async def main():
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
 
-    dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(CommandHandler("trollo", ask_trollo))
-    dp.add_handler(MessageHandler(Filters.text & Filters.group, reply_to_mentions))
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("trollo", trollo))
+    app.add_handler(MessageHandler(filters.TEXT & filters.ChatType.GROUPS, reply_in_group))
 
-    updater.bot.delete_webhook(drop_pending_updates=True)
+    await app.run_polling()
 
-    updater.start_polling()
-    updater.idle()
-
-if __name__ == '__main__':
-    main()
+# run
+if __name__ == "__main__":
+    import asyncio
+    asyncio.run(main())
