@@ -1,51 +1,22 @@
-import os
-import logging
-import random
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
+import logging import os from telegram import Update from telegram.ext import ( ApplicationBuilder, CommandHandler, ContextTypes, MessageHandler, filters )
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
+Logging 
 
-if not BOT_TOKEN:
-    raise ValueError("BOT_TOKEN not found in environment variables.")
+logging.basicConfig( format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO ) logger = logging.getLogger(name)
 
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
-)
+Main reply function 
 
-# TROLLO phrases
-trollo_lines = [
-    "Who summoned the meme lord?",
-    "Another day, another poor trader.",
-    "Don't trust green candles... or clowns.",
-    "Keep calm and TROLLO on.",
-    "When in doubt, zoom out.",
-]
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE): message = update.message.text.lower() user = update.message.from_user.first_name
 
-# /start command
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("TROLLO has entered the chat. Say something...")
+if 'hello' in message: reply = f"Yo {user}, what's up? You just got TROLLO'd!" elif 'trollo' in message: reply = "The legend never dies. I'm watching you... with my Bitcoin shades." else: reply = f"Hmm... I felt that, {user}. But you better be talking memes or crypto!" await update.message.reply_text(reply) Start command 
 
-# /trollo command
-async def trollo(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(random.choice(trollo_lines))
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE): await update.message.reply_text("TROLLO is here. Type something... if you dare.")
 
-# respond to any group message mentioning bot
-async def reply_in_group(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if context.bot.username.lower() in update.message.text.lower():
-        await update.message.reply_text(random.choice(trollo_lines))
+Run the bot 
 
-# MAIN
-async def main():
-    app = ApplicationBuilder().token(BOT_TOKEN).build()
+async def main(): token = os.environ.get("BOT_TOKEN") if not token: logger.error("BOT_TOKEN is missing in environment variables.") return
 
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("trollo", trollo))
-    app.add_handler(MessageHandler(filters.TEXT & filters.ChatType.GROUPS, reply_in_group))
+app = ApplicationBuilder().token(token).build() app.add_handler(CommandHandler("start", start)) app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message)) logger.info("TROLLO bot is up and running...") await app.run_polling() 
 
-    await app.run_polling()
+if name == 'main': import asyncio asyncio.run(main())
 
-# run
-if __name__ == "__main__":
-    import asyncio
-    asyncio.run(main())
