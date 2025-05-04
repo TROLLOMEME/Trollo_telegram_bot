@@ -1,56 +1,54 @@
 import os
 import logging
-from telegram.ext import Updater, MessageHandler, Filters
-from openai import OpenAI, OpenAIError
+from telegram import Update
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
+import openai
 
-# Env vars
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+openai.api_key = OPENAI_API_KEY
 
-print("=== DEBUG | BOT_TOKEN:", BOT_TOKEN)
-print("=== DEBUG | OPENAI_API_KEY:", OPENAI_API_KEY)
-
-if not BOT_TOKEN or not OPENAI_API_KEY:
-    print("BOT_TOKEN or OPENAI_API_KEY is missing!")
-    exit()
-
-# Set up OpenAI client
-client = OpenAI(api_key=OPENAI_API_KEY)
-
-# Logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# TROLLO personality prompt
-trollo_system_prompt = "You are TROLLO, a playful, cheeky, funny and slightly sarcastic meme crypto troll. You never give financial advice. Respond in short, witty style."
+TROLLO_SYSTEM_PROMPT = (
+    "You are TROLLO, a mysterious, funny and cheeky crypto troll. "
+    "You talk in meme-style sarcasm, give short smart replies and never give financial advice."
+)
 
-# Handler
-def trollo_reply(update, context):
-    chat_type = update.message.chat.type
-    message = update.message.text
-    chat_id = update.message.chat_id
-
-    if chat_type not in ["private", "group", "supergroup"]:
-        return  # Ignore other types
+def ask_trollo(update: Update, context: CallbackContext):
+    query = ' '.join(context.args)
+    if not query:
+        update.message.reply_text("Say something, human...")
+        return
 
     try:
-        response = client.chat.completions.create(
+        response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": trollo_system_prompt},
-                {"role": "user", "content": message}
+                {"role": "system", "content": TROLLO_SYSTEM_PROMPT},
+                {"role": "user", "content": query}
             ]
         )
         reply = response.choices[0].message.content.strip()
-    except OpenAIError:
-        reply = "Oops, my brain just went mining... try again later."
+    except Exception as e:
+        reply = "TROLLO glitched. Try again later."
 
-    context.bot.send_message(chat_id=chat_id, text=reply)
+    update.message.reply_text(reply, reply_to_message_id=update.message.message_id)
 
-# Set up Telegram bot
-updater = Updater(BOT_TOKEN, use_context=True)
-dp = updater.dispatcher
-dp.add_handler(MessageHandler(Filters.text & ~Filters.command, trollo_reply))
+def reply_to_mentions(update: Update, context: CallbackContext):
+    if update.message.text and ('@' in update.message.text or update.message.reply_to_message):
+        ask_trollo(update, context)
 
-updater.start_polling()
-updater.idle()
+def main():
+    updater = Updater(BOT_TOKEN, use_context=True)
+    dp = updater.dispatcher
+
+    dp.add_handler(CommandHandler("trollo", ask_trollo))
+    dp.add_handler(MessageHandler(Filters.text & Filters.group, reply_to_mentions))
+
+    updater.start_polling()
+    updater.idle()
+
+if __name__ == '__main__':
+    main()
