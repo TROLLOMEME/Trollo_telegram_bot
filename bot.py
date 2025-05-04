@@ -1,22 +1,17 @@
 import os
 from telegram.ext import Updater, MessageHandler, Filters
-import openai
 
-BOT_TOKEN = os.getenv(BOT_TOKEN)
-OPENAI_API_KEY = os.getenv(OPENAI_API_KEY)
-openai.api_key = OPENAI_API_KEY
+# Debug BOT_TOKEN
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+print("=== DEBUG | BOT_TOKEN:", BOT_TOKEN)
 
+if not BOT_TOKEN or BOT_TOKEN.strip() == "":
+    print("=== ERROR | BOT_TOKEN is missing or empty!")
+    exit()
+
+# If token exists, continue
 def handle_message(update, context):
-    user_input = update.message.text
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": "You're TROLLO, a funny and clever crypto meme bot. Keep replies short, sharp, and funny."},
-            {"role": "user", "content": user_input}
-        ]
-    )
-    answer = response["choices"][0]["message"]["content"]
-    update.message.reply_text(answer)
+    update.message.reply_text("TROLLO is alive!")
 
 updater = Updater(BOT_TOKEN, use_context=True)
 dp = updater.dispatcher
