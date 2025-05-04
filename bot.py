@@ -1,42 +1,32 @@
 import os
 import random
 from telegram import Update
-from telegram.ext import Updater, MessageHandler, Filters, CallbackContext
+from telegram.ext import ApplicationBuilder, ContextTypes, MessageHandler, filters
 
-# Read token from environment variable
+# Set your token here from environment variable
 TOKEN = os.getenv("BOT_TOKEN")
 
-# Funny and varied TROLLO replies
+# List of TROLLO-style fun replies
 TROLLO_REPLIES = [
     "Haha. That’s funny, but not TROLLO funny.",
     "You just summoned the Meme Lord.",
-    "I see you trying to be funny... Respect.",
-    "That’s cute. But have you heard of TROLLO?",
-    "Boom. Roasted. TROLLO style.",
-    "You speak. I troll.",
-    "Try harder. TROLLO is watching.",
     "That joke made my Bitcoin glasses fog up.",
-    "TROLLO approves... kinda.",
+    "Boom. Roasted. TROLLO style.",
     "Say less, HODL more.",
+    "Try harder. TROLLO is watching.",
     "Insert legendary response here.",
-    "You’re in the presence of greatness. Behave.",
     "Not bad, human. Not bad at all."
 ]
 
-def trollo_reply(update: Update, context: CallbackContext):
-    user_message = update.message.text
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_text = update.message.text
     reply = random.choice(TROLLO_REPLIES)
-    update.message.reply_text(reply)
+    await update.message.reply_text(reply)
 
 def main():
-    updater = Updater(TOKEN, use_context=True)
-    dp = updater.dispatcher
-
-    # Handle all text messages
-    dp.add_handler(MessageHandler(Filters.text & (~Filters.command), trollo_reply))
-
-    updater.start_polling()
-    updater.idle()
+    app = ApplicationBuilder().token(TOKEN).build()
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    app.run_polling()
 
 if __name__ == '__main__':
     main()
