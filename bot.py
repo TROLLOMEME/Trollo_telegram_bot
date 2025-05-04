@@ -1,43 +1,43 @@
-import os
-import logging
-from telegram import Update
-from telegram.ext import (
-    ApplicationBuilder,
-    CommandHandler,
-    MessageHandler,
-    ContextTypes,
-    filters
-)
+from random import choice
 
-# Setup logging
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    level=logging.INFO
-)
+def generate_trollo_reply(message: str) -> str:
+    replies = {
+        "funny": [
+            "Haha. That's funny, but not TROLLO funny.",
+            "Nice try, rookie. TROLLO's on another level.",
+            "That joke needs a meme makeover!",
+            "TROLLO laughs... slightly.",
+            "Almost made me giggle. Almost."
+        ],
+        "mystery": [
+            "The shadows are watching...",
+            "Every word you send feeds the ritual.",
+            "You’ve triggered the TROLLO protocol.",
+            "One more message and it begins.",
+            "Your meme energy is... incomplete."
+        ],
+        "friendly": [
+            "Hey buddy! Ready to pump the meme?",
+            "What's up legend?",
+            "Always here for you, soldier!",
+            "TROLLO never sleeps.",
+            "Did someone summon a green friend?"
+        ],
+        "default": [
+            "TROLLO is listening.",
+            "Type louder, I can't hear your vibes.",
+            "Silence is golden, but memes are better.",
+            "TROLLO has entered the chat.",
+            "I see you... and your weak meme."
+        ]
+    }
 
-# Load token
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-if not BOT_TOKEN:
-    raise ValueError("BOT_TOKEN is not set")
-
-# Handlers
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Hey! I'm TROLLO. I'm always watching the memes.")
-
-async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    text = update.message.text.lower()
-    if "trollo" in text:
-        await update.message.reply_text("You summoned me? Let's meme the moon.")
+    message = message.lower()
+    if "lol" in message or "haha" in message:
+        return choice(replies["funny"])
+    elif "?" in message or "ritual" in message:
+        return choice(replies["mystery"])
+    elif "hi" in message or "hello" in message or "hey" in message:
+        return choice(replies["friendly"])
     else:
-        await update.message.reply_text("Haha. That’s funny, but not TROLLO funny.")
-
-def main():
-    app = ApplicationBuilder().token(BOT_TOKEN).build()
-
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
-
-    app.run_polling(allowed_updates=Update.ALL_TYPES)
-
-if __name__ == "__main__":
-    main()
+        return choice(replies["default"])
