@@ -52,3 +52,13 @@ def main():
 
 if __name__ == '__main__':
     main()
+updater = Updater(BOT_TOKEN, use_context=True)
+    dp = updater.dispatcher
+
+    dp.add_handler(...)
+
+    # Clear any existing webhook
+    updater.bot.delete_webhook(drop_pending_updates=True)
+
+    updater.start_polling()
+    updater.idle()
