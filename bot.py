@@ -1,31 +1,32 @@
 import os
-import random
+import openai
 from telegram import Update
-from telegram.ext import ApplicationBuilder, ContextTypes, MessageHandler, filters
+from telegram.ext import ApplicationBuilder, MessageHandler, ContextTypes, filters
 
-# Set your token here from environment variable
-TOKEN = os.getenv("BOT_TOKEN")
+# Load secrets
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-# List of TROLLO-style fun replies
-TROLLO_REPLIES = [
-    "Haha. That’s funny, but not TROLLO funny.",
-    "You just summoned the Meme Lord.",
-    "That joke made my Bitcoin glasses fog up.",
-    "Boom. Roasted. TROLLO style.",
-    "Say less, HODL more.",
-    "Try harder. TROLLO is watching.",
-    "Insert legendary response here.",
-    "Not bad, human. Not bad at all."
-]
+# Set OpenAI key
+openai.api_key = OPENAI_API_KEY
 
-async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_text = update.message.text
-    reply = random.choice(TROLLO_REPLIES)
+async def chat_with_trollo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_message = update.message.text
+
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "You are TROLLO, a funny, sarcastic, and clever meme lord. Reply short, bold, playful, and meme-style. Never sound like a boring bot."},
+            {"role": "user", "content": user_message}
+        ]
+    )
+
+    reply = response['choices'][0]['message']['content']
     await update.message.reply_text(reply)
 
 def main():
-    app = ApplicationBuilder().token(TOKEN).build()
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, chat_with_trollo))
     app.run_polling()
 
 if __name__ == '__main__':
