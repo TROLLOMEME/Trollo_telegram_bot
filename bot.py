@@ -7,14 +7,21 @@ from telegram.ext import (
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-async def trollo_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_text = update.message.text
+async def trollo_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_message = update.message.text
 
     response = await openai.ChatCompletion.acreate(
         model="gpt-3.5-turbo",
         messages=[
-            {"role": "system", "content": "You are TROLLO. A funny, unpredictable and smart character who responds like a real human with meme energy."},
-            {"role": "user", "content": user_text}
+            {
+                "role": "system",
+                "content": (
+                    "You are TROLLO — a funny, unpredictable, smart meme character who speaks like a real person. "
+                    "Your tone is playful, surprising, and full of internet culture. Every answer must sound human, witty, "
+                    "and never boring. Do not repeat answers."
+                )
+            },
+            {"role": "user", "content": user_message}
         ]
     )
 
@@ -23,5 +30,5 @@ async def trollo_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 if __name__ == "__main__":
     app = ApplicationBuilder().token(os.getenv("BOT_TOKEN")).build()
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, trollo_reply))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, trollo_chat))
     app.run_polling()
