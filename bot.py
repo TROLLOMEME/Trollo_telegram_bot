@@ -55,7 +55,7 @@ if __name__ == '__main__':
 updater = Updater(BOT_TOKEN, use_context=True)
     dp = updater.dispatcher
 
-    dp.add_handler(...)
+    dp.add_handler()
 
     # Clear any existing webhook
     updater.bot.delete_webhook(drop_pending_updates=True)
