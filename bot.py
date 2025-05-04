@@ -41,3 +41,7 @@ def generate_trollo_reply(message: str) -> str:
         return choice(replies["friendly"])
     else:
         return choice(replies["default"])
+        def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_message = update.message.text
+    response = generate_trollo_reply(user_message)
+    update.message.reply_text(response)
