@@ -1,4 +1,9 @@
+import os
+from telegram import Update
+from telegram.ext import ApplicationBuilder, ContextTypes, MessageHandler, filters
 from random import choice
+
+BOT_TOKEN = os.environ.get("BOT_TOKEN")
 
 def generate_trollo_reply(message: str) -> str:
     replies = {
@@ -41,7 +46,14 @@ def generate_trollo_reply(message: str) -> str:
         return choice(replies["friendly"])
     else:
         return choice(replies["default"])
-        def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_message = update.message.text
-    response = generate_trollo_reply(user_message)
-    update.message.reply_text(response)
+    reply = generate_trollo_reply(user_message)
+    await update.message.reply_text(reply)
+
+if __name__ == '__main__':
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
+    app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
+    print("TROLLO bot is alive.")
+    app.run_polling()
