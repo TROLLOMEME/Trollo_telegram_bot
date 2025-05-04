@@ -1,4 +1,3 @@
-
 import os
 from telegram.ext import Updater, MessageHandler, Filters
 import openai
