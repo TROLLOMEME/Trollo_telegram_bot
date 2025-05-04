@@ -1,32 +1,25 @@
 import os
-import openai
 from telegram import Update
-from telegram.ext import (
-    ApplicationBuilder, MessageHandler, ContextTypes, filters
-)
+from telegram.ext import ApplicationBuilder, MessageHandler, ContextTypes, filters
+from openai import OpenAI
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
+openai = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 async def trollo_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_message = update.message.text
 
-    response = await openai.ChatCompletion.acreate(
+    response = openai.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
-            {
-                "role": "system",
-                "content": (
-                    "You are TROLLO — a funny, unpredictable, smart meme character who speaks like a real person. "
-                    "Your tone is playful, surprising, and full of internet culture. Every answer must sound human, witty, "
-                    "and never boring. Do not repeat answers."
-                )
-            },
+            {"role": "system", "content": (
+                "You are TROLLO — a funny, sharp-witted meme character who talks like a cool internet friend. "
+                "You love memes, chaos, crypto jokes, and never give boring replies. Be playful, unpredictable, and entertaining.")},
             {"role": "user", "content": user_message}
         ]
     )
 
-    reply = response.choices[0].message.content.strip()
-    await update.message.reply_text(reply)
+    bot_reply = response.choices[0].message.content.strip()
+    await update.message.reply_text(bot_reply)
 
 if __name__ == "__main__":
     app = ApplicationBuilder().token(os.getenv("BOT_TOKEN")).build()
